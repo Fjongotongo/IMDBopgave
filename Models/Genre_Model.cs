@@ -9,5 +9,10 @@ namespace IMDBopgave.Models
     public class Genre_Model
     {
         public string Genre { get; set; }
+
+        public Genre_Model(string genre)
+        {
+            Genre = genre;
+        }
     }
 }

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 Console.WriteLine("IMDB Import");
 
-Stopwatch stopwatch = Stopwatch.StartNew();
+//Stopwatch stopwatch = Stopwatch.StartNew();
 List<Title_Model> movies = new List<Title_Model>();
 
 IInserter inserter = new BulkInserter();
