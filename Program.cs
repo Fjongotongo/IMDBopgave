@@ -1,4 +1,5 @@
 ﻿using IMDBopgave;
+using IMDBopgave.Inserters;
 using IMDBopgave.Models;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics;
@@ -9,6 +10,9 @@ Console.WriteLine("IMDB Import");
 List<Title_Model> movies = new List<Title_Model>();
 
 IInserter inserter = new BulkInserter();
+
+BulkInserterGenre genreInserter = new BulkInserterGenre();
+List<Genre_Model> genres = new List<Genre_Model>();
 
 SqlConnection sqlConn = new SqlConnection(
     "Server=localhost;Database=MovieDB;Integrated security=True;" +
@@ -23,24 +27,40 @@ foreach (string movie in allLines.Skip(1))
     string[] parts = movie.Split('\t');
     if (parts.Length == 9)
     {
-        movies.Add(new Title_Model(parts));
+        string[] genresInRow = movie.Split(",");
+
+        genres.Add(new Genre_Model(parts[8]));
     }
     else
     {
         Console.WriteLine("Invalid line: " + movie);
     }
-
-    if (movies.Count >= 1000000)
-    {
-        inserter.InsertTitles(movies, sqlConn);
-        movies.Clear();
-    }
+    
 }
 
-if (movies.Count > 0) 
-{
-    inserter.InsertTitles(movies, sqlConn);
-}
+//foreach (string movie in allLines.Skip(1))
+//{
+//    string[] parts = movie.Split('\t');
+//    if (parts.Length == 9)
+//    {
+//        movies.Add(new Title_Model(parts));
+//    }
+//    else
+//    {
+//        Console.WriteLine("Invalid line: " + movie);
+//    }
+
+//    if (movies.Count >= 1000000)
+//    {
+//        inserter.InsertTitles(movies, sqlConn);
+//        movies.Clear();
+//    }
+//}
+
+//if (movies.Count > 0) 
+//{
+//    inserter.InsertTitles(movies, sqlConn);
+//}
 
 
 sqlConn.Close();
