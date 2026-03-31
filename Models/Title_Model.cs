@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMDBopgave
+namespace IMDBopgave.Models
 {
     public class Title_Model
     {

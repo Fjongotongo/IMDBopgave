@@ -1,4 +1,5 @@
 ﻿using IMDBopgave;
+using IMDBopgave.Models;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 
@@ -15,7 +16,7 @@ SqlConnection sqlConn = new SqlConnection(
 sqlConn.Open();
 
 
-var allLines = File.ReadLines("").ToArray();
+var allLines = File.ReadLines("C:/Users/leo/Downloads/title.basics.tsv/title.basics.tsv").ToArray();
 
 foreach (string movie in allLines.Skip(1))
 {

@@ -1,0 +1,66 @@
+
+USE MovieDB
+
+-- title.basics.tsv:
+
+CREATE TABLE Titles(
+    TConst INT PRIMARY KEY NOT NULL,
+    TitleType VARCHAR(12) NOT NULL,
+    PrimaryTitle VARCHAR(500) NOT NULL,
+    OriginalTitle VARCHAR(500) NOT NULL,
+    IsAdult BIT NOT NULL,
+    StartYear SMALLINT NULL,
+    EndYear SMALLINT NULL,
+    RuntimeMinutes INT NULL
+)
+
+CREATE TABLE Genres(
+    GenreID INT IDENTITY (1,1) PRIMARY KEY NOT NULL,
+    Genre VARCHAR(20) NOT NULL UNIQUE
+)
+
+CREATE TABLE Titles_Genres(
+    FK_TConst INT NOT NULL,
+    FK_GenreID INT NOT NULL,
+    PRIMARY KEY (FK_TConst, FK_GenreID),
+    CONSTRAINT FK_TitlesGenres_TConst FOREIGN KEY (FK_TConst) REFERENCES Titles(TConst),
+    CONSTRAINT FK_TitlesGenres_GenreID FOREIGN KEY (FK_GenreID) REFERENCES Genres(GenreID)
+)
+
+CREATE TABLE [Names](
+    NConst INT PRIMARY KEY NOT NULL,
+    PrimaryName  VARCHAR(50) NOT NULL,
+    BirthYear SMALLINT NULL,
+    DeathYear SMALLINT NULL
+)
+
+CREATE TABLE PrimaryProfessions(
+    PPID INT PRIMARY KEY NOT NULL IDENTITY (1,1),
+    PrimaryProfession VARCHAR(30) NOT NULL UNIQUE
+)
+
+CREATE TABLE Names_Titles(
+    FK_NConst INT NOT NULL,
+    FK_TConst INT NOT NULL,
+    PRIMARY KEY (FK_NConst, FK_TConst),
+    CONSTRAINT FK_NamesTitles_NConst FOREIGN KEY (FK_NConst) REFERENCES [Names](NConst),
+    CONSTRAINT FK_NamesTitles_TConst FOREIGN KEY (FK_TConst) REFERENCES Titles(TConst)
+)
+
+CREATE TABLE CrewRoles(
+    RoleID INT PRIMARY KEY IDENTITY (1,1) NOT NULL,
+    RoleName VARCHAR(30) NOT NULL UNIQUE 
+)
+
+CREATE TABLE Titles_Crew(
+    FK_TConst INT NOT NULL,
+    FK_NConst INT NOT NULL,
+    FK_RoleID INT NOT NULL,
+    PRIMARY KEY (FK_TConst, FK_NConst, FK_RoleID),
+    CONSTRAINT FK_KnownForTitle_TConst FOREIGN KEY (FK_TConst) REFERENCES Titles(TConst),
+    CONSTRAINT FK_KnownForTitle_NConst FOREIGN KEY (FK_NConst) REFERENCES [Names](NConst),
+    CONSTRAINT FK_KnownForTitle_RoleID FOREIGN KEY (FK_RoleID) REFERENCES CrewRoles(RoleID)
+)
+
+
+
