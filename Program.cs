@@ -1,4 +1,5 @@
 ﻿using IMDBopgave;
+using IMDBopgave.DataInserting;
 using IMDBopgave.Inserters;
 using IMDBopgave.Models;
 using Microsoft.Data.SqlClient;
@@ -7,7 +8,9 @@ using System.Diagnostics;
 
 Console.WriteLine("IMDB Import");
 
-
+BulkTitleInsert.BulkInsertingTitle();
+//BulkGenreInsert.InsertingGenres();
+//BulkTitleGenreInsert.TitleGenreInserting();
 
 //Stopwatch stopwatch = Stopwatch.StartNew();
 
