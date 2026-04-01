@@ -1,40 +1,30 @@
-﻿using IMDBopgave.Models;
-using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace IMDBopgave.Inserters
 {
     public class BulkInserterGenre
     {
-        public void InsertGenres(List<Genre_Model> genres, SqlConnection sqlConn)
+        // Vi ændrer inputtet til at tage imod vores HashSet
+        public void InsertGenres(HashSet<string> genres, SqlConnection sqlConn)
         {
             DataTable genreTable = new DataTable();
             genreTable.Columns.Add("Genre", typeof(string));
 
-            foreach (Genre_Model genre in genres)
+            // Nu behøver vi slet ikke at tjekke for dubletter, 
+            // for HashSet'et har allerede sorteret dem fra!
+            foreach (string genre in genres)
             {
-                if (genreTable.Rows.Contains(genre.Genre))
-                {
-                    continue;
-                }
-                else
-                {
-                    genreTable.Rows.Add(genre.Genre);
-                }
-
+                genreTable.Rows.Add(genre);
             }
 
-            SqlBulkCopy bulkCopy = new SqlBulkCopy(sqlConn)
+            // Brug "using" for at sikre at SqlBulkCopy rydder pænt op efter sig
+            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(sqlConn))
             {
-                DestinationTableName = "Genres"
-            };
-
-            bulkCopy.WriteToServer(genreTable);
+                bulkCopy.DestinationTableName = "Genres";
+                bulkCopy.WriteToServer(genreTable);
+            }
         }
     }
 }

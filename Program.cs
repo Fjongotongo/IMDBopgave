@@ -20,23 +20,41 @@ SqlConnection sqlConn = new SqlConnection(
 sqlConn.Open();
 
 
-var allLines = File.ReadLines("C:/Users/leo/Downloads/title.basics.tsv/title.basics.tsv").ToArray();
+// Brug et HashSet i stedet for en List til at samle unikke genrer
+HashSet<string> uniqueGenres = new HashSet<string>();
+
+var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/title.basics (1).tsv");
 
 foreach (string movie in allLines.Skip(1))
 {
     string[] parts = movie.Split('\t');
+
     if (parts.Length == 9)
     {
-        string[] genresInRow = movie.Split(",");
+        string genresString = parts[8];
 
-        genres.Add(new Genre_Model(parts[8]));
+        // IMDb bruger "\N" for tomme felter. Dem vil vi ikke have ind i databasen.
+        if (genresString != "\\N")
+        {
+            // Nu splitter vi KUN genre-teksten på komma
+            string[] individualGenres = genresString.Split(',');
+
+            foreach (string g in individualGenres)
+            {
+                // HashSet sørger automatisk for, at der ikke kommer dubletter ind
+                uniqueGenres.Add(g.Trim());
+            }
+        }
     }
     else
     {
         Console.WriteLine("Invalid line: " + movie);
     }
-    
 }
+
+// Kald din inserter og send dit HashSet med
+// BulkInserterGenre genreInserter = new BulkInserterGenre();
+genreInserter.InsertGenres(uniqueGenres, sqlConn);
 
 //foreach (string movie in allLines.Skip(1))
 //{
