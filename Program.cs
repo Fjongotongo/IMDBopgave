@@ -54,6 +54,8 @@ foreach (string movie in allLines.Skip(1))
 
 // Kald din inserter og send dit HashSet med
 // BulkInserterGenre genreInserter = new BulkInserterGenre();
+Console.WriteLine($"Gennemgik filen og fandt {uniqueGenres.Count} unikke genrer.");
+Console.WriteLine("Skriver til databasen...");
 genreInserter.InsertGenres(uniqueGenres, sqlConn);
 
 //foreach (string movie in allLines.Skip(1))
