@@ -19,7 +19,7 @@ namespace IMDBopgave.DataInserting
                 "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
 
-            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/title.basics (1).tsv");
+            var allLines = File.ReadLines("C:\\Users\\leo\\Downloads\\title.basics.tsv\\title.basics.tsv");
 
 
             Console.WriteLine("Henter Genre-ID'er fra databasen...");

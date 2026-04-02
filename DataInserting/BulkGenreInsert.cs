@@ -21,7 +21,7 @@ namespace IMDBopgave.DataInserting
                 "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
 
-            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/title.basics (1).tsv");
+            var allLines = File.ReadLines("C:\\Users\\leo\\Downloads\\title.basics.tsv\\title.basics.tsv");
 
             // Brug et HashSet i stedet for en List til at samle unikke genrer
             HashSet<string> uniqueGenres = new HashSet<string>();

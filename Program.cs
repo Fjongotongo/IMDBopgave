@@ -11,7 +11,8 @@ Console.WriteLine("IMDB Import");
 //BulkTitleInsert.BulkInsertingTitle();
 //BulkGenreInsert.InsertingGenres();
 //BulkTitleGenreInsert.TitleGenreInserting();
-BulkNameInsert.BulkInsertingName();
+//BulkNameInsert.BulkInsertingName();
+BulkPrimaryProfessionInsert.InsertingPrimaryProfessions();
 
 //Stopwatch stopwatch = Stopwatch.StartNew();
 

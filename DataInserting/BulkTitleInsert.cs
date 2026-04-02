@@ -22,7 +22,7 @@ namespace IMDBopgave.DataInserting
             sqlConn.Open();
 
 
-            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/title.basics (1).tsv");
+            var allLines = File.ReadLines("C:\\Users\\leo\\Downloads\\title.basics.tsv\\title.basics.tsv");
 
             foreach (string movie in allLines.Skip(1))
             {
