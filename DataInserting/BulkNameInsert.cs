@@ -28,7 +28,7 @@ namespace IMDBopgave.DataInserting
             foreach (string name in allLines.Skip(1))
             {
                 string[] parts = name.Split('\t');
-                if (parts.Length == 9)
+                if (parts.Length == 6)
                 {
                     names.Add(new Name_Model(parts));
                 }
