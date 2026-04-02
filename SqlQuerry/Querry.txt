@@ -29,7 +29,7 @@ CREATE TABLE Titles_Genres(
 
 CREATE TABLE [Names](
     NConst INT PRIMARY KEY NOT NULL,
-    PrimaryName  VARCHAR(50) NOT NULL,
+    PrimaryName  VARCHAR(110) NOT NULL,
     BirthYear SMALLINT NULL,
     DeathYear SMALLINT NULL
 )
