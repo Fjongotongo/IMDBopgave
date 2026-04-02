@@ -8,9 +8,10 @@ using System.Diagnostics;
 
 Console.WriteLine("IMDB Import");
 
-BulkTitleInsert.BulkInsertingTitle();
+//BulkTitleInsert.BulkInsertingTitle();
 //BulkGenreInsert.InsertingGenres();
 //BulkTitleGenreInsert.TitleGenreInserting();
+BulkNameInsert.BulkInsertingName();
 
 //Stopwatch stopwatch = Stopwatch.StartNew();
 

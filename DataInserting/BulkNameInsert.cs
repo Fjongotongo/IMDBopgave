@@ -23,7 +23,7 @@ namespace IMDBopgave.DataInserting
             "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
 
-            var allLines = File.ReadLines("");
+            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/name.basics.tsv");
 
             foreach (string name in allLines.Skip(1))
             {
