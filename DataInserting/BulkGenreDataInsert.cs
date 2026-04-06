@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace IMDBopgave.DataInserting
 {
-    public static class BulkGenreInsert
+    public static class BulkGenreDataInsert
     {
         public static void InsertingGenres()
         {

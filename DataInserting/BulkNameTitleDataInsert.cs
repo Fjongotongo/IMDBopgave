@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IMDBopgave.DataInserting
 {
-    public static class BulkNameTitleInsert
+    public static class BulkNameTitleDataInsert
     {
         public static void NameTitleInserting()
         {

@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace IMDBopgave.Inserters
 {
-    public class BulkInserter_PrimaryProfession
+    public class BulkInserterPrimaryProfession
     {
-        public void InsertPP(HashSet<string> PP, SqlConnection sqlConn)
+        public void InsertPP(HashSet<string> primaryProfession, SqlConnection sqlConn)
         {
-            DataTable PPTable = new DataTable();
-            PPTable.Columns.Add("PrimaryProfession", typeof(string));
+            DataTable PrimaryProfessionTable = new DataTable();
+            PrimaryProfessionTable.Columns.Add("PrimaryProfession", typeof(string));
 
-            foreach (string pp in PP)
+            foreach (string pp in primaryProfession)
             {
-                PPTable.Rows.Add(pp);
+                PrimaryProfessionTable.Rows.Add(pp);
             }
 
             using (SqlBulkCopy bulkCopy = new SqlBulkCopy(sqlConn))
@@ -29,7 +29,7 @@ namespace IMDBopgave.Inserters
                 // Så ignorerer den automatisk GenreID, som SQL selv styrer.
                 bulkCopy.ColumnMappings.Add("PrimaryProfession", "PrimaryProfession");
 
-                bulkCopy.WriteToServer(PPTable);
+                bulkCopy.WriteToServer(PrimaryProfessionTable);
             }
         }
     }
