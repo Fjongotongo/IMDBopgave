@@ -2,14 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace IMDBopgave.DataInserting
 {
-    public static class BulkNameTitleDataInsert
+    public class BulkTitleCrewDataInsert
     {
-        public static void NameTitleInserting()
+        public static void TitleCrewInserting()
         {
             SqlConnection sqlConn = new SqlConnection(
             "Server=localhost;Database=MovieDB;Integrated security=True;" +
