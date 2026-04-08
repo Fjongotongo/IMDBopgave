@@ -1,4 +1,5 @@
-﻿using IMDBopgave.Models;
+﻿using IMDBopgave.Inserters;
+using IMDBopgave.Models;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace IMDBopgave.DataInserting
         {
             List<Title_Model> movies = new List<Title_Model>();
 
-            IInserter inserter = new BulkInserter();
+            IInserter inserter = new BulkInserterTitle();
 
             SqlConnection sqlConn = new SqlConnection(
             "Server=localhost;Database=MovieDB;Integrated security=True;" +

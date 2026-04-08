@@ -8,9 +8,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IMDBopgave
+namespace IMDBopgave.Inserters
 {
-    public class BulkInserter : IInserter
+    public class BulkInserterTitle : IInserter
     {
         public void InsertTitles(List<Title_Model> titles, SqlConnection sqlConn)
         {
