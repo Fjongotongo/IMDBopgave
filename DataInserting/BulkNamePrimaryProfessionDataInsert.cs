@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using IMDBopgave.Inserters;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,6 +16,8 @@ namespace IMDBopgave.DataInserting
             "Server=localhost;Database=MovieDB;Integrated security=True;" +
             "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
+
+            BulkInserterNamePrimaryProfession namePrimaryProfessionInserter = new BulkInserterNamePrimaryProfession();
 
             // 1. Læs filen med navne
             var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/name.basics.tsv");
@@ -85,7 +88,7 @@ namespace IMDBopgave.DataInserting
                 if (namesProfessionsTable.Rows.Count >= 500000)
                 {
                     Console.WriteLine($"Indsætter batch... (Har fundet {relationCount} relationer indtil videre)");
-                    InsertNamesProfessionsBatch(namesProfessionsTable, sqlConn);
+                    namePrimaryProfessionInserter.InsertNamesProfessionsBatch(namesProfessionsTable, sqlConn);
                     namesProfessionsTable.Clear();
                 }
             }
@@ -94,29 +97,12 @@ namespace IMDBopgave.DataInserting
             if (namesProfessionsTable.Rows.Count > 0)
             {
                 Console.WriteLine("Indsætter sidste batch...");
-                InsertNamesProfessionsBatch(namesProfessionsTable, sqlConn);
+                namePrimaryProfessionInserter.InsertNamesProfessionsBatch(namesProfessionsTable, sqlConn);
             }
 
             Console.WriteLine($"Færdig! Indsatte i alt {relationCount} Names_PrimaryProfessions relationer.");
 
             sqlConn.Close();
-        }
-
-        // Hjælpemetode til Names_PrimaryProfessions
-        static void InsertNamesProfessionsBatch(DataTable table, SqlConnection conn)
-        {
-            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn))
-            {
-                bulkCopy.DestinationTableName = "Names_PrimaryProfessions";
-
-                // Map C# kolonner til SQL kolonner
-                bulkCopy.ColumnMappings.Add("FK_NConst", "FK_NConst");
-                bulkCopy.ColumnMappings.Add("FK_PPID", "FK_PPID");
-
-                bulkCopy.BulkCopyTimeout = 600;
-
-                bulkCopy.WriteToServer(table);
-            }
         }
     }
 }
