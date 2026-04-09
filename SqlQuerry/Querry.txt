@@ -1,4 +1,3 @@
-/*
 USE MovieDB
 
 -- title.basics.tsv:
@@ -70,7 +69,6 @@ CREATE TABLE Titles_Crew(
     CONSTRAINT FK_TitlesCrew_NConst FOREIGN KEY (FK_NConst) REFERENCES [Names](NConst),
     CONSTRAINT FK_TitlesCrew_RoleID FOREIGN KEY (FK_RoleID) REFERENCES CrewRoles(RoleID)
 )
-*/
 
 INSERT INTO CrewRoles (RoleName) VALUES ('Director')
 INSERT INTO CrewRoles (RoleName) VALUES ('Writer')
@@ -90,3 +88,208 @@ SELECT * FROM Names_Titles
 SELECT * FROM Names_PrimaryProfessions
 
 SELECT * FROM Titles_Crew
+
+
+------------------------------
+--As a user I want to search for a movie title using wildcard searching, and see the result in alphabetic order
+
+CREATE OR ALTER PROCEDURE SearchMovieTitle 
+    @TitleFragment VARCHAR(500)
+AS
+BEGIN
+    SELECT 
+        Titles.*, 
+        Genres.Genre
+    FROM 
+        Titles
+    JOIN 
+        Titles_Genres ON Titles.TConst = Titles_Genres.FK_TConst
+    JOIN 
+        Genres ON Titles_Genres.FK_GenreID = Genres.GenreID
+    WHERE 
+        Titles.PrimaryTitle LIKE '%' + @TitleFragment + '%'
+    ORDER BY 
+        Titles.PrimaryTitle ASC;
+END
+
+EXEC SearchMovieTitle @TitleFragment= 'Min opdaterede' 
+
+
+---------------------
+
+--As a user I want to search for a person using wildcard searching, and see the result in alphabetic order
+
+CREATE OR ALTER PROCEDURE SearchName 
+    @NameFragment VARCHAR(125)
+AS
+BEGIN
+    SELECT 
+        Names.*,
+        PrimaryProfessions.PrimaryProfession,
+        Titles.PrimaryTitle
+    FROM 
+        Names
+    -- Første bro: Fra Person til Profession
+    LEFT JOIN 
+        Names_PrimaryProfessions ON Names.NConst = Names_PrimaryProfessions.FK_NConst
+    LEFT JOIN 
+        PrimaryProfessions ON Names_PrimaryProfessions.FK_PPID = PrimaryProfessions.PPID
+    
+    -- Anden bro: Fra Person til Film
+    LEFT JOIN 
+        Names_Titles ON Names.NConst = Names_Titles.FK_NConst
+    LEFT JOIN 
+        Titles ON Names_Titles.FK_TConst = Titles.TConst
+        
+    WHERE 
+        Names.PrimaryName LIKE '%' + @NameFragment + '%'
+    ORDER BY 
+        Names.PrimaryName ASC;
+END
+
+EXEC SearchName @NameFragment= 'Lauren Bacall' 
+
+----------------------------
+
+--As an user I want to add a movie to the database (only basic (title table) information)
+
+CREATE OR ALTER PROCEDURE AddMovie 
+    @TitleType VARCHAR(12), 
+    @PrimaryTitle VARCHAR(500),
+    @OriginalTitle VARCHAR(500), 
+    @IsAdult BIT,
+    @StartYear SMALLINT, 
+    @EndYear SMALLINT,
+    @RuntimeMinutes INT, 
+    @Genre VARCHAR(20)
+AS
+BEGIN
+    DECLARE @NewTConst INT;
+    SELECT @NewTConst = MAX(TConst) + 1 FROM Titles;
+
+    INSERT INTO Titles (TConst, TitleType, PrimaryTitle, OriginalTitle, IsAdult, StartYear, EndYear, RuntimeMinutes) 
+    VALUES (@NewTConst, @TitleType, @PrimaryTitle, @OriginalTitle, @IsAdult, @StartYear, @EndYear, @RuntimeMinutes);
+
+    DECLARE @FoundGenreID INT;
+    SELECT @FoundGenreID = GenreID FROM Genres WHERE Genre = @Genre;
+
+    IF @FoundGenreID IS NOT NULL
+    BEGIN
+        INSERT INTO Titles_Genres (FK_TConst, FK_GenreID)
+        VALUES (@NewTConst, @FoundGenreID);
+    END
+END
+
+EXEC AddMovie 
+    @TitleType = 'Smovie', 
+    @PrimaryTitle = 'Min SSeje Actionfilm', 
+    @OriginalTitle = 'Min SSeje Actionfilm', 
+    @IsAdult = 0, 
+    @StartYear = 2025, 
+    @EndYear = NULL, 
+    @RuntimeMinutes = 130,
+    @Genre = 'Action';
+
+----------------------------------
+
+--As an user I want to add a person to the database (only basic (name basic) information)
+
+CREATE OR ALTER PROCEDURE AddPerson 
+    @PrimaryName VARCHAR(110),
+    @BirthYear SMALLINT = NULL, 
+    @DeathYear SMALLINT = NULL,
+    @Professions VARCHAR(500) = NULL,
+    @KnownForTitles VARCHAR(500) = NULL
+AS
+BEGIN
+    -- 1. Skab ID og indsæt personen i Names
+    DECLARE @NewNConst INT;
+    SELECT @NewNConst = MAX(NConst) + 1 FROM Names;
+
+    INSERT INTO Names (NConst, PrimaryName, BirthYear, DeathYear) 
+    VALUES (@NewNConst, @PrimaryName, @BirthYear, @DeathYear);
+
+    -- 2. Håndtér komma-separerede professioner
+    IF @Professions IS NOT NULL
+    BEGIN
+        INSERT INTO Names_PrimaryProfessions (FK_NConst, FK_PPID)
+        SELECT @NewNConst, pp.PPID
+        -- STRING_SPLIT deler teksten ved hvert komma. TRIM fjerner evt. mellemrum.
+        FROM STRING_SPLIT(@Professions, ',') s
+        JOIN PrimaryProfessions pp ON pp.PrimaryProfession = TRIM(s.value); 
+    END
+
+    -- 3. Håndtér komma-separerede kendte titler
+    IF @KnownForTitles IS NOT NULL
+    BEGIN
+        INSERT INTO Names_Titles (FK_NConst, FK_TConst)
+        SELECT @NewNConst, t.TConst
+        FROM STRING_SPLIT(@KnownForTitles, ',') s
+        -- Vi oversætter teksten til tal og tjekker om filmen reelt findes i Titles
+        JOIN Titles t ON t.TConst = TRY_CAST(TRIM(s.value) AS INT);
+    END
+END
+
+
+EXEC AddPerson 
+    @PrimaryName = 'Lauren Bacall', 
+    @BirthYear = 1924, 
+    @DeathYear = 2014, 
+    @Professions = 'actress,soundtrack', 
+    @KnownForTitles = '37382,75213';
+
+-------------------------------
+
+-- As an user I want to update movie information (only basic information + genre)
+
+CREATE OR ALTER PROCEDURE UpdateMovie 
+    @TConst INT,
+    @TitleType VARCHAR(12), 
+    @PrimaryTitle VARCHAR(500),
+    @OriginalTitle VARCHAR(500), 
+    @IsAdult BIT,
+    @StartYear SMALLINT, 
+    @EndYear SMALLINT,
+    @RuntimeMinutes INT,
+    @Genre VARCHAR(20)
+AS
+BEGIN
+    UPDATE Titles
+    SET 
+        TitleType = @TitleType,
+        PrimaryTitle = @PrimaryTitle,
+        OriginalTitle = @OriginalTitle,
+        IsAdult = @IsAdult,
+        StartYear = @StartYear,
+        EndYear = @EndYear,
+        RuntimeMinutes = @RuntimeMinutes
+    WHERE 
+        TConst = @TConst;
+
+    -- 2. Fjern den gamle genre-relation for filmen
+    DELETE FROM Titles_Genres WHERE FK_TConst = @TConst;
+
+    -- 3. Slå den NYE genre op
+    DECLARE @FoundGenreID INT;
+    SELECT @FoundGenreID = GenreID FROM Genres WHERE Genre = @Genre;
+
+    -- 4. Byg den nye bro, hvis genren findes
+    IF @FoundGenreID IS NOT NULL
+    BEGIN
+        INSERT INTO Titles_Genres (FK_TConst, FK_GenreID)
+        VALUES (@TConst, @FoundGenreID);
+    END
+END
+
+-- Test-kaldet:
+EXEC UpdateMovie 
+    @TConst = 1, 
+    @TitleType = 'movie', 
+    @PrimaryTitle = 'Min Opdaterede Actionfilm',
+    @OriginalTitle = 'Min Opdaterede Actionfilm', 
+    @IsAdult = 0,
+    @StartYear = 2026,
+    @EndYear = NULL,
+    @RuntimeMinutes = 140,
+    @Genre = 'Comedy'; 
+
