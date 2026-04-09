@@ -16,69 +16,113 @@ class Program
     {
         Console.WriteLine("--- IMDB System Aktiveret ---");
 
-        // 1. Eksempel: Søg efter film (SearchMovieTitle)
-        SearchMovie("Min SSeje");
+        Console.WriteLine("/help for commands");
 
-        // 2. Eksempel: Tilføj en person (AddPerson)
-        AddPersonToDb("Mads Mikkelsen", 1965, null, "actor", "1,2");
 
-        Console.WriteLine("\nTryk på en tast for at lukke...");
-        Console.ReadKey();
-    }
 
-    // METODE TIL AT SØGE OG VISE RESULTATER
-    static void SearchMovie(string fragment)
-    {
-        using (SqlConnection conn = new SqlConnection(connString))
+        switch (Console.ReadLine())
         {
-            // Navnet på din procedure
-            SqlCommand cmd = new SqlCommand("SearchMovieTitle", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
+            case "/help":
+                Console.WriteLine("Tilgængelige kommandoer:");
+                Console.WriteLine("/search - Søg efter film");
+                Console.WriteLine("/addperson - Tilføj en person");
+                // Tilføj flere kommandoer her
+                break;
+            case "/search":
+                Console.WriteLine("Search for title");
+                string titleFragment = Console.ReadLine();
 
-            // Tilføj parameteren
-            cmd.Parameters.AddWithValue("@TitleFragment", fragment);
+                // 1. Eksempel: Søg efter film (SearchMovieTitle)
+                SearchMovie(titleFragment);
+                break;
 
-            conn.Open();
-            using (SqlDataReader reader = cmd.ExecuteReader())
+            //case "/addperson":
+            //    Console.WriteLine("Add person in the format");
+
+            //    Console.WriteLine("Enter name");
+            //    string nameInput = Console.ReadLine();
+
+            //    Console.WriteLine("Enter birthinput (press enter to skip)");
+            //    int? birthInput = Console.ReadLine();
+
+            //    if (string.IsNullOrWhiteSpace(birthInput)) { birthInput = null; }
+
+            //    Console.WriteLine("Enter deathinput (press enter to skip)");
+            //    string? deathInput = Console.ReadLine();
+
+            //    if (string.IsNullOrWhiteSpace(deathInput)) { deathInput = null; }
+
+            //    Console.WriteLine("Enter professions (comma separated)");
+            //    string professionsInput = Console.ReadLine();
+
+            //    Console.WriteLine("Enter known for titles (comma separated)");
+            //    string knownForTitlesInput = Console.ReadLine();
+
+            //    AddPersonToDb(nameInput, birthInput, deathInput, professionsInput, knownForTitlesInput);
+            //    break;
+            default:
+                Console.WriteLine("Command not available, /help for commands");
+                break;
+
+
+                //Console.WriteLine("\nTryk på en tast for at lukke...");
+                //Console.ReadKey();
+        }
+
+        // METODE TIL AT SØGE OG VISE RESULTATER
+        static void SearchMovie(string fragment)
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
             {
-                Console.WriteLine($"\nSøgeresultater for: {fragment}");
-                Console.WriteLine("--------------------------------------");
+                // Navnet på din procedure
+                SqlCommand cmd = new SqlCommand("SearchMovieTitle", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                if (!reader.HasRows) Console.WriteLine("Ingen film fundet.");
+                // Tilføj parameteren
+                cmd.Parameters.AddWithValue("@TitleFragment", fragment);
 
-                while (reader.Read())
+                conn.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    // Her henter vi kolonnerne. Du kan bruge navne eller index.
-                    string title = reader["PrimaryTitle"].ToString();
-                    string genre = reader["Genre"].ToString();
-                    string year = reader["StartYear"].ToString();
+                    Console.WriteLine($"\nSøgeresultater for: {fragment}");
+                    Console.WriteLine("--------------------------------------");
 
-                    Console.WriteLine($"- {title} ({year}) | Genre: {genre}");
+                    if (!reader.HasRows) Console.WriteLine("Ingen film fundet.");
+
+                    while (reader.Read())
+                    {
+                        // Her henter vi kolonnerne. Du kan bruge navne eller index.
+                        string title = reader["PrimaryTitle"].ToString();
+                        string genre = reader["Genre"].ToString();
+                        string year = reader["StartYear"].ToString();
+
+                        Console.WriteLine($"- {title} ({year}) | Genre: {genre}");
+                    }
                 }
             }
         }
-    }
 
-    // METODE TIL AT TILFØJE (Add/Update/Delete)
-    static void AddPersonToDb(string name, int? birth, int? death, string professions, string titles)
-    {
-        using (SqlConnection conn = new SqlConnection(connString))
+        // METODE TIL AT TILFØJE (Add/Update/Delete)
+        static void AddPersonToDb(string name, int? birth, int? death, string professions, string titles)
         {
-            SqlCommand cmd = new SqlCommand("AddPerson", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                SqlCommand cmd = new SqlCommand("AddPerson", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-            // Parametre - Husk DBNull.Value hvis noget er null!
-            cmd.Parameters.AddWithValue("@PrimaryName", name);
-            cmd.Parameters.AddWithValue("@BirthYear", (object)birth ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@DeathYear", (object)death ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Professions", (object)professions ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@KnownForTitles", (object)titles ?? DBNull.Value);
+                // Parametre - Husk DBNull.Value hvis noget er null!
+                cmd.Parameters.AddWithValue("@PrimaryName", name);
+                cmd.Parameters.AddWithValue("@BirthYear", (object)birth ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@DeathYear", (object)death ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Professions", (object)professions ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@KnownForTitles", (object)titles ?? DBNull.Value);
 
-            conn.Open();
-            int rowsAffected = cmd.ExecuteNonQuery();
+                conn.Open();
+                int rowsAffected = cmd.ExecuteNonQuery();
 
-            if (rowsAffected > 0)
-                Console.WriteLine($"\nSucces! {name} er nu tilføjet til databasen.");
+                if (rowsAffected > 0)
+                    Console.WriteLine($"\nSucces! {name} er nu tilføjet til databasen.");
+            }
         }
     }
 }
