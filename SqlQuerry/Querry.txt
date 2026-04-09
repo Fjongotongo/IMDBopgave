@@ -1,4 +1,3 @@
-/*
 USE MovieDB
 
 -- title.basics.tsv:
@@ -61,19 +60,11 @@ CREATE TABLE Titles_Crew(
     CONSTRAINT FK_TitlesCrew_NConst FOREIGN KEY (FK_NConst) REFERENCES [Names](NConst),
     CONSTRAINT FK_TitlesCrew_RoleID FOREIGN KEY (FK_RoleID) REFERENCES CrewRoles(RoleID)
 )
-*/
-
-SELECT * from Genres
-
-SELECT * from Titles
-
-SELECT * from Titles_Genres
-
-SELECT * from Names
-
-SELECT * FROM PrimaryProfessions
-
-SELECT * FROM Names_Titles
 
 
+-- Eventuelt lav til stored procedure
+INSERT INTO CrewRoles (RoleName) VALUES ('Director')
+INSERT INTO CrewRoles (RoleName) VALUES ('Writer')
 
+SELECT * FROM CrewRoles
+-----------------------

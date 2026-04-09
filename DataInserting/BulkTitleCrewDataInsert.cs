@@ -3,21 +3,22 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace IMDBopgave.DataInserting
 {
-    public static class BulkNameTitleDataInsert
+    public class BulkTitleCrewDataInsert
     {
-        public static void NameTitleInserting()
+        public static void TitleCrewInserting()
         {
             SqlConnection sqlConn = new SqlConnection(
             "Server=localhost;Database=MovieDB;Integrated security=True;" +
             "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
 
-            BulkInserterNameTitle nameTitleInserter = new BulkInserterNameTitle();
+            BulkInserterTitleCrew titleCrewInserter = new BulkInserterTitleCrew();
 
             // 1. Læs den RIGTIGE fil med navne
             var allLines = File.ReadLines("");
@@ -88,7 +89,7 @@ namespace IMDBopgave.DataInserting
                 if (namesTitlesTable.Rows.Count >= 500000)
                 {
                     Console.WriteLine($"Indsætter batch... (Har fundet {relationCount} relationer indtil videre)");
-                    nameTitleInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
+                    titleCrewInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
                     namesTitlesTable.Clear();
                 }
             }
@@ -97,7 +98,7 @@ namespace IMDBopgave.DataInserting
             if (namesTitlesTable.Rows.Count > 0)
             {
                 Console.WriteLine("Indsætter sidste batch...");
-                nameTitleInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
+                titleCrewInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
             }
 
             Console.WriteLine($"Færdig! Indsatte i alt {relationCount} Names_Titles relationer.");
