@@ -10,16 +10,17 @@ namespace IMDBopgave.Inserters
 {
     public class BulkInserterTitleCrew
     {
-        public void InsertNamesTitlesBatch(DataTable table, SqlConnection conn)
+        public void InsertTitlesCrewBatch(DataTable table, SqlConnection conn)
         {
             using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn))
             {
                 // Vigtigt! Peger nu på Names_Titles tabellen
-                bulkCopy.DestinationTableName = "Names_Titles";
+                bulkCopy.DestinationTableName = "Titles_Crew";
 
                 // Vigtigt! Mapper nu NConst og TConst
-                bulkCopy.ColumnMappings.Add("FK_NConst", "FK_NConst");
                 bulkCopy.ColumnMappings.Add("FK_TConst", "FK_TConst");
+                bulkCopy.ColumnMappings.Add("FK_NConst", "FK_NConst");
+                bulkCopy.ColumnMappings.Add("FK_RoleID", "FK_RoleID");
 
                 bulkCopy.BulkCopyTimeout = 600;
 

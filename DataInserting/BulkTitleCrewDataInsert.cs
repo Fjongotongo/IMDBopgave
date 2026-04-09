@@ -3,9 +3,8 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IMDBopgave.DataInserting
 {
@@ -20,30 +19,55 @@ namespace IMDBopgave.DataInserting
 
             BulkInserterTitleCrew titleCrewInserter = new BulkInserterTitleCrew();
 
-            // 1. Læs den RIGTIGE fil med navne
-            var allLines = File.ReadLines("");
+            // 1. Læs title.crew.tsv filen
+            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/title.crew.tsv");
 
-            Console.WriteLine("Henter alle gyldige TConst (Film-ID'er) fra databasen...");
-
-            // 2. Vi bruger et HashSet til lynhurtigt at tjekke, om en film findes i databasen
+            // 2. Hent gyldige Film (TConst)
+            Console.WriteLine("Henter gyldige TConst (Film-ID'er) fra databasen...");
             HashSet<int> validTitles = new HashSet<int>();
-
             using (SqlCommand cmd = new SqlCommand("SELECT TConst FROM Titles", sqlConn))
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read()) { validTitles.Add(reader.GetInt32(0)); }
+            }
+            Console.WriteLine($"Fandt {validTitles.Count} film.");
+
+            // 3. Hent gyldige Navne (NConst) - Nødvendigt fordi IMDb's data kan være mangelfuld!
+            Console.WriteLine("Henter gyldige NConst (Navne-ID'er) fra databasen...");
+            HashSet<int> validNames = new HashSet<int>();
+            using (SqlCommand cmd = new SqlCommand("SELECT NConst FROM Names", sqlConn))
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read()) { validNames.Add(reader.GetInt32(0)); }
+            }
+            Console.WriteLine($"Fandt {validNames.Count} navne.");
+
+            // 4. Hent CrewRoles ("director" -> 1, "writer" -> 2)
+            Console.WriteLine("Henter RoleID'er fra databasen...");
+            Dictionary<string, int> roleMap = new Dictionary<string, int>();
+            using (SqlCommand cmd = new SqlCommand("SELECT RoleID, RoleName FROM CrewRoles", sqlConn))
             using (SqlDataReader reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    validTitles.Add(reader.GetInt32(0));
+                    roleMap.Add(reader.GetString(1), reader.GetInt32(0));
                 }
             }
-            Console.WriteLine($"Fandt {validTitles.Count} gyldige film i databasen.");
 
-            // 3. Klargør en tabel til at holde relationerne (FK_NConst og FK_TConst)
-            DataTable namesTitlesTable = new DataTable();
-            namesTitlesTable.Columns.Add("FK_NConst", typeof(int));
-            namesTitlesTable.Columns.Add("FK_TConst", typeof(int));
+            // Tjekker lige om vi rent faktisk fandt rollerne i databasen
+            if (!roleMap.ContainsKey("Director") || !roleMap.ContainsKey("Writer"))
+            {
+                Console.WriteLine("FEJL: Mangler 'director' eller 'writer' i CrewRoles tabellen i SQL!");
+                return; // Stopper programmet
+            }
 
-            Console.WriteLine("Læser Names og bygger relationer...");
+            // 5. Klargør DataTable til Titles_Crew
+            DataTable titlesCrewTable = new DataTable();
+            titlesCrewTable.Columns.Add("FK_TConst", typeof(int));
+            titlesCrewTable.Columns.Add("FK_NConst", typeof(int));
+            titlesCrewTable.Columns.Add("FK_RoleID", typeof(int));
+
+            Console.WriteLine("Læser title.crew og bygger relationer...");
 
             int relationCount = 0;
 
@@ -51,32 +75,42 @@ namespace IMDBopgave.DataInserting
             {
                 string[] parts = line.Split('\t');
 
-                // name.basics har 6 kolonner. Kolonne index 5 er "knownForTitles"
-                if (parts.Length == 6)
+                // title.crew.tsv har 3 kolonner: tconst (0), directors (1), writers (2)
+                if (parts.Length == 3)
                 {
-                    // Hent NConst og fjern "nm"
-                    string rawNConst = parts[0].Substring(2);
+                    // Hent TConst og fjern "tt"
+                    string rawTConst = parts[0].Substring(2);
 
-                    if (int.TryParse(rawNConst, out int nconstInt))
+                    if (int.TryParse(rawTConst, out int tconstInt))
                     {
-                        string knownForString = parts[5];
-
-                        if (knownForString != "\\N")
+                        // Tjek om filmen overhovedet findes i vores database
+                        if (validTitles.Contains(tconstInt))
                         {
-                            // Split på komma, da en person kan have flere kendte titler
-                            string[] individualTitles = knownForString.Split(',');
-
-                            foreach (string t in individualTitles)
+                            // --- HÅNDTER DIRECTORS (Index 1) ---
+                            if (parts[1] != "\\N")
                             {
-                                // Hent TConst og fjern "tt"
-                                string cleanTitle = t.Trim().Substring(2);
-
-                                if (int.TryParse(cleanTitle, out int tconstInt))
+                                string[] directors = parts[1].Split(',');
+                                foreach (string d in directors)
                                 {
-                                    // TJEK: Findes denne film overhovedet i vores SQL database?
-                                    if (validTitles.Contains(tconstInt))
+                                    string cleanDirector = d.Trim().Substring(2); // Fjern "nm"
+                                    if (int.TryParse(cleanDirector, out int nconstInt) && validNames.Contains(nconstInt))
                                     {
-                                        namesTitlesTable.Rows.Add(nconstInt, tconstInt);
+                                        titlesCrewTable.Rows.Add(tconstInt, nconstInt, roleMap["Director"]);
+                                        relationCount++;
+                                    }
+                                }
+                            }
+
+                            // --- HÅNDTER WRITERS (Index 2) ---
+                            if (parts[2] != "\\N")
+                            {
+                                string[] writers = parts[2].Split(',');
+                                foreach (string w in writers)
+                                {
+                                    string cleanWriter = w.Trim().Substring(2); // Fjern "nm"
+                                    if (int.TryParse(cleanWriter, out int nconstInt) && validNames.Contains(nconstInt))
+                                    {
+                                        titlesCrewTable.Rows.Add(tconstInt, nconstInt, roleMap["Writer"]);
                                         relationCount++;
                                     }
                                 }
@@ -85,23 +119,23 @@ namespace IMDBopgave.DataInserting
                     }
                 }
 
-                // Batching: Skyd afsted pr. 500.000 rækker
-                if (namesTitlesTable.Rows.Count >= 500000)
+                // Batching
+                if (titlesCrewTable.Rows.Count >= 500000)
                 {
                     Console.WriteLine($"Indsætter batch... (Har fundet {relationCount} relationer indtil videre)");
-                    titleCrewInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
-                    namesTitlesTable.Clear();
+                    titleCrewInserter.InsertTitlesCrewBatch(titlesCrewTable, sqlConn);
+                    titlesCrewTable.Clear();
                 }
             }
 
             // Indsæt resterne
-            if (namesTitlesTable.Rows.Count > 0)
+            if (titlesCrewTable.Rows.Count > 0)
             {
                 Console.WriteLine("Indsætter sidste batch...");
-                titleCrewInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
+                titleCrewInserter.InsertTitlesCrewBatch(titlesCrewTable, sqlConn);
             }
 
-            Console.WriteLine($"Færdig! Indsatte i alt {relationCount} Names_Titles relationer.");
+            Console.WriteLine($"Færdig! Indsatte i alt {relationCount} Titles_Crew relationer.");
 
             sqlConn.Close();
         }
