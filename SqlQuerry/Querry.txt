@@ -152,7 +152,6 @@ EXEC SearchName @NameFragment= 'Lauren Bacall'
 ----------------------------
 
 --As an user I want to add a movie to the database (only basic (title table) information)
-
 CREATE OR ALTER PROCEDURE AddMovie 
     @TitleType VARCHAR(12), 
     @PrimaryTitle VARCHAR(500),
@@ -161,7 +160,7 @@ CREATE OR ALTER PROCEDURE AddMovie
     @StartYear SMALLINT, 
     @EndYear SMALLINT,
     @RuntimeMinutes INT, 
-    @Genre VARCHAR(20)
+    @Genres VARCHAR(75)
 AS
 BEGIN
     DECLARE @NewTConst INT;
@@ -170,26 +169,25 @@ BEGIN
     INSERT INTO Titles (TConst, TitleType, PrimaryTitle, OriginalTitle, IsAdult, StartYear, EndYear, RuntimeMinutes) 
     VALUES (@NewTConst, @TitleType, @PrimaryTitle, @OriginalTitle, @IsAdult, @StartYear, @EndYear, @RuntimeMinutes);
 
-    DECLARE @FoundGenreID INT;
-    SELECT @FoundGenreID = GenreID FROM Genres WHERE Genre = @Genre;
-
-    IF @FoundGenreID IS NOT NULL
+    -- Håndtér komma-separerede genrer
+    IF @Genres IS NOT NULL
     BEGIN
         INSERT INTO Titles_Genres (FK_TConst, FK_GenreID)
-        VALUES (@NewTConst, @FoundGenreID);
+        SELECT @NewTConst, g.GenreID
+        FROM STRING_SPLIT(@Genres, ',') s
+        JOIN Genres g ON g.Genre = TRIM(s.value);
     END
 END
 
 EXEC AddMovie 
-    @TitleType = 'Smovie', 
+    @TitleType = 'movie', 
     @PrimaryTitle = 'Min SSeje Actionfilm', 
     @OriginalTitle = 'Min SSeje Actionfilm', 
     @IsAdult = 0, 
     @StartYear = 2025, 
     @EndYear = NULL, 
     @RuntimeMinutes = 130,
-    @Genre = 'Action';
-
+    @Genres = 'Action,Comedy,Thriller'
 ----------------------------------
 
 --As an user I want to add a person to the database (only basic (name basic) information)
