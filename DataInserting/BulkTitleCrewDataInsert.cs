@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using IMDBopgave.Inserters;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,6 +17,8 @@ namespace IMDBopgave.DataInserting
             "Server=localhost;Database=MovieDB;Integrated security=True;" +
             "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
+
+            BulkInserterTitleCrew titleCrewInserter = new BulkInserterTitleCrew();
 
             // 1. Læs den RIGTIGE fil med navne
             var allLines = File.ReadLines("");
@@ -86,7 +89,7 @@ namespace IMDBopgave.DataInserting
                 if (namesTitlesTable.Rows.Count >= 500000)
                 {
                     Console.WriteLine($"Indsætter batch... (Har fundet {relationCount} relationer indtil videre)");
-                    InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
+                    titleCrewInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
                     namesTitlesTable.Clear();
                 }
             }
@@ -95,30 +98,12 @@ namespace IMDBopgave.DataInserting
             if (namesTitlesTable.Rows.Count > 0)
             {
                 Console.WriteLine("Indsætter sidste batch...");
-                InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
+                titleCrewInserter.InsertNamesTitlesBatch(namesTitlesTable, sqlConn);
             }
 
             Console.WriteLine($"Færdig! Indsatte i alt {relationCount} Names_Titles relationer.");
 
             sqlConn.Close();
-        }
-
-        // RETTET: Den nye hjælpemetode til Names_Titles
-        static void InsertNamesTitlesBatch(DataTable table, SqlConnection conn)
-        {
-            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn))
-            {
-                // Vigtigt! Peger nu på Names_Titles tabellen
-                bulkCopy.DestinationTableName = "Names_Titles";
-
-                // Vigtigt! Mapper nu NConst og TConst
-                bulkCopy.ColumnMappings.Add("FK_NConst", "FK_NConst");
-                bulkCopy.ColumnMappings.Add("FK_TConst", "FK_TConst");
-
-                bulkCopy.BulkCopyTimeout = 600;
-
-                bulkCopy.WriteToServer(table);
-            }
         }
     }
 }
