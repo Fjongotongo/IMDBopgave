@@ -112,7 +112,7 @@ BEGIN
         Titles.PrimaryTitle ASC;
 END
 
-EXEC SearchMovieTitle @TitleFragment= 'Pikkepik' 
+EXEC SearchMovieTitle @TitleFragment= '' 
 
 
 ---------------------
@@ -129,13 +129,11 @@ BEGIN
         Titles.PrimaryTitle
     FROM 
         Names
-    -- Første bro: Fra Person til Profession
     LEFT JOIN 
         Names_PrimaryProfessions ON Names.NConst = Names_PrimaryProfessions.FK_NConst
     LEFT JOIN 
         PrimaryProfessions ON Names_PrimaryProfessions.FK_PPID = PrimaryProfessions.PPID
-    
-    -- Anden bro: Fra Person til Film
+   
     LEFT JOIN 
         Names_Titles ON Names.NConst = Names_Titles.FK_NConst
     LEFT JOIN 
@@ -188,7 +186,7 @@ EXEC AddMovie
     @StartYear = 2025, 
     @EndYear = NULL, 
     @RuntimeMinutes = 130,
-    @Genres = 'Action,Comedy,Thriller'
+    @Genres = 'Action'
 
 ----------------------------------
 
@@ -202,30 +200,26 @@ CREATE OR ALTER PROCEDURE AddPerson
     @KnownForTitles VARCHAR(500) = NULL
 AS
 BEGIN
-    -- 1. Skab ID og indsæt personen i Names
     DECLARE @NewNConst INT;
     SELECT @NewNConst = MAX(NConst) + 1 FROM Names;
 
     INSERT INTO Names (NConst, PrimaryName, BirthYear, DeathYear) 
     VALUES (@NewNConst, @PrimaryName, @BirthYear, @DeathYear);
 
-    -- 2. Håndtér komma-separerede professioner
     IF @Professions IS NOT NULL
     BEGIN
         INSERT INTO Names_PrimaryProfessions (FK_NConst, FK_PPID)
         SELECT @NewNConst, pp.PPID
-        -- STRING_SPLIT deler teksten ved hvert komma. TRIM fjerner evt. mellemrum.
+
         FROM STRING_SPLIT(@Professions, ',') s
         JOIN PrimaryProfessions pp ON pp.PrimaryProfession = TRIM(s.value); 
     END
 
-    -- 3. Håndtér komma-separerede kendte titler
     IF @KnownForTitles IS NOT NULL
     BEGIN
         INSERT INTO Names_Titles (FK_NConst, FK_TConst)
         SELECT @NewNConst, t.TConst
         FROM STRING_SPLIT(@KnownForTitles, ',') s
-        -- Vi oversætter teksten til tal og tjekker om filmen reelt findes i Titles
         JOIN Titles t ON t.TConst = TRY_CAST(TRIM(s.value) AS INT);
     END
 END
@@ -251,10 +245,9 @@ CREATE OR ALTER PROCEDURE UpdateMovie
     @StartYear SMALLINT, 
     @EndYear SMALLINT,
     @RuntimeMinutes INT,
-    @Genres VARCHAR(500) -- Rettet til flertal og gjort længere
+    @Genres VARCHAR(500)
 AS
 BEGIN
-    -- 1. Opdatér selve filmen i Titles-tabellen
     UPDATE Titles
     SET 
         TitleType = @TitleType,
@@ -267,10 +260,8 @@ BEGIN
     WHERE 
         TConst = @TConst;
 
-    -- 2. Slet ALLE gamle genre-relationer for filmen (vi nulstiller broen)
     DELETE FROM Titles_Genres WHERE FK_TConst = @TConst;
 
-    -- 3. Byg de nye broer med STRING_SPLIT (præcis som i AddMovie)
     IF @Genres IS NOT NULL
     BEGIN
         INSERT INTO Titles_Genres (FK_TConst, FK_GenreID)
@@ -280,7 +271,7 @@ BEGIN
     END
 END
 
--- Test-kaldet:
+
 EXEC UpdateMovie 
     @TConst = 1, 
     @TitleType = 'movie', 
