@@ -112,7 +112,7 @@ BEGIN
         Titles.PrimaryTitle ASC;
 END
 
-EXEC SearchMovieTitle @TitleFragment= 'Min opdaterede' 
+EXEC SearchMovieTitle @TitleFragment= 'Pikkepik' 
 
 
 ---------------------
@@ -147,11 +147,12 @@ BEGIN
         Names.PrimaryName ASC;
 END
 
-EXEC SearchName @NameFragment= 'Lauren Bacall' 
+EXEC SearchName @NameFragment= 'Børge Jørgensen' 
 
 ----------------------------
 
 --As an user I want to add a movie to the database (only basic (title table) information)
+
 CREATE OR ALTER PROCEDURE AddMovie 
     @TitleType VARCHAR(12), 
     @PrimaryTitle VARCHAR(500),
@@ -188,6 +189,7 @@ EXEC AddMovie
     @EndYear = NULL, 
     @RuntimeMinutes = 130,
     @Genres = 'Action,Comedy,Thriller'
+
 ----------------------------------
 
 --As an user I want to add a person to the database (only basic (name basic) information)
@@ -249,9 +251,10 @@ CREATE OR ALTER PROCEDURE UpdateMovie
     @StartYear SMALLINT, 
     @EndYear SMALLINT,
     @RuntimeMinutes INT,
-    @Genre VARCHAR(20)
+    @Genres VARCHAR(500) -- Rettet til flertal og gjort længere
 AS
 BEGIN
+    -- 1. Opdatér selve filmen i Titles-tabellen
     UPDATE Titles
     SET 
         TitleType = @TitleType,
@@ -264,18 +267,16 @@ BEGIN
     WHERE 
         TConst = @TConst;
 
-    -- 2. Fjern den gamle genre-relation for filmen
+    -- 2. Slet ALLE gamle genre-relationer for filmen (vi nulstiller broen)
     DELETE FROM Titles_Genres WHERE FK_TConst = @TConst;
 
-    -- 3. Slå den NYE genre op
-    DECLARE @FoundGenreID INT;
-    SELECT @FoundGenreID = GenreID FROM Genres WHERE Genre = @Genre;
-
-    -- 4. Byg den nye bro, hvis genren findes
-    IF @FoundGenreID IS NOT NULL
+    -- 3. Byg de nye broer med STRING_SPLIT (præcis som i AddMovie)
+    IF @Genres IS NOT NULL
     BEGIN
         INSERT INTO Titles_Genres (FK_TConst, FK_GenreID)
-        VALUES (@TConst, @FoundGenreID);
+        SELECT @TConst, g.GenreID
+        FROM STRING_SPLIT(@Genres, ',') s
+        JOIN Genres g ON g.Genre = TRIM(s.value);
     END
 END
 
@@ -289,5 +290,5 @@ EXEC UpdateMovie
     @StartYear = 2026,
     @EndYear = NULL,
     @RuntimeMinutes = 140,
-    @Genre = 'Comedy'; 
+    @Genres = 'Comedy, action';
 
