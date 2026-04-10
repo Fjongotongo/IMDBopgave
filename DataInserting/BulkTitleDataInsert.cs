@@ -22,7 +22,7 @@ namespace IMDBopgave.DataInserting
             "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
 
-
+            // Title.basics.tsv
             var allLines = File.ReadLines("C:\\Users\\leo\\Downloads\\title.basics.tsv\\title.basics.tsv");
 
             foreach (string movie in allLines.Skip(1))

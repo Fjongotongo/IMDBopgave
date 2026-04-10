@@ -24,7 +24,7 @@ class Program
             Console.WriteLine("2. Søg efter person");
             Console.WriteLine("3. Tilføj en person");
             Console.WriteLine("4. Tilføj en film");
-            Console.WriteLine("5. Opdatér en film"); 
+            Console.WriteLine("5. Opdatér en film");
             Console.WriteLine("0. Afslut");
             Console.Write("\nVælg en handling: ");
 
@@ -353,20 +353,16 @@ class Program
                 Console.WriteLine($"\nFEJL VED OPDATERING: {ex.Message}");
             }
         }
+
+        //Console.WriteLine("IMDB Import");
+
+        //BulkTitleDataInsert.BulkInsertingTitle();
+        //BulkGenreDataInsert.InsertingGenres();
+        //BulkTitleGenreDataInsert.TitleGenreInserting();
+        //BulkNameDataInsert.BulkInsertingName();
+        //BulkPrimaryProfessionDataInsert.InsertingPrimaryProfessions();
+        //BulkNameTitleDataInsert.NameTitleInserting();
+        //BulkNamePrimaryProfessionDataInsert.NameProfessionInserting();
+        //BulkTitleCrewDataInsert.TitleCrewInserting();
     }
 }
-
-//Console.WriteLine("IMDB Import");
-
-//BulkTitleDataInsert.BulkInsertingTitle();
-//BulkGenreDataInsert.InsertingGenres();
-//BulkTitleGenreDataInsert.TitleGenreInserting();
-//BulkNameDataInsert.BulkInsertingName();
-//BulkPrimaryProfessionDataInsert.InsertingPrimaryProfessions();
-//BulkNameTitleDataInsert.NameTitleInserting();
-//BulkNamePrimaryProfessionDataInsert.NameProfessionInserting();
-//BulkTitleCrewDataInsert.TitleCrewInserting();
-
-
-
-

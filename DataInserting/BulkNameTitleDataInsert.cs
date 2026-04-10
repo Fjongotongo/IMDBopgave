@@ -19,6 +19,7 @@ namespace IMDBopgave.DataInserting
 
             BulkInserterNameTitle nameTitleInserter = new BulkInserterNameTitle();
 
+            // Name.basics.tsv
             var allLines = File.ReadLines("");
 
             Console.WriteLine("Henter alle gyldige TConst (Film-ID'er) fra databasen...");

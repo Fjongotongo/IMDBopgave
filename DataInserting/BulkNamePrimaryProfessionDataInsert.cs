@@ -19,7 +19,8 @@ namespace IMDBopgave.DataInserting
 
             BulkInserterNamePrimaryProfession namePrimaryProfessionInserter = new BulkInserterNamePrimaryProfession();
 
-            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/name.basics.tsv");
+            // Name.basics.tsv
+            var allLines = File.ReadLines("C:/Users/felsd/Desktop/SQLDatabaser/SQLObligatorisk/Filer/name.basics.tsv");
 
             Console.WriteLine("Henter Profession-ID'er fra databasen...");
 

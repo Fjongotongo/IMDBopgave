@@ -21,6 +21,7 @@ namespace IMDBopgave.DataInserting
                 "Trusted_Connection=True;TrustServerCertificate=True;");
             sqlConn.Open();
 
+            // Title.basics.tsv
             var allLines = File.ReadLines("C:\\Users\\leo\\Downloads\\title.basics.tsv\\title.basics.tsv");
 
             HashSet<string> uniqueGenres = new HashSet<string>();

@@ -19,7 +19,8 @@ namespace IMDBopgave.DataInserting
 
             BulkInserterTitleCrew titleCrewInserter = new BulkInserterTitleCrew();
 
-            var allLines = File.ReadLines("C:/Users/marti/OneDrive/Skrivebord/SQL-databaser/title.crew.tsv");
+            // Title.crew.tsv
+            var allLines = File.ReadLines("C:/Users/felsd/Desktop/SQLDatabaser/SQLObligatorisk/Filer/title.crew.tsv");
 
             Console.WriteLine("Henter gyldige TConst (Film-ID'er) fra databasen...");
             HashSet<int> validTitles = new HashSet<int>();

@@ -21,6 +21,7 @@ namespace IMDBopgave.DataInserting
 
             BulkInserterTitleGenre titleGenreInserter = new BulkInserterTitleGenre();
 
+            // Title.basics.tsv
             var allLines = File.ReadLines("C:\\Users\\leo\\Downloads\\title.basics.tsv\\title.basics.tsv");
 
 
