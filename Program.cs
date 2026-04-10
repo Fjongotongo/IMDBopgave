@@ -9,7 +9,6 @@ using System;
 
 class Program
 {
-    // Din Connection String
     static string connString = ("Server=localhost;Database=MovieDB;Integrated security=True;" +
                                 "Trusted_Connection=True;TrustServerCertificate=True;");
 
@@ -25,7 +24,7 @@ class Program
             Console.WriteLine("2. Søg efter person");
             Console.WriteLine("3. Tilføj en person");
             Console.WriteLine("4. Tilføj en film");
-            Console.WriteLine("5. Opdatér en film"); // DEN SIDSTE BRIK!
+            Console.WriteLine("5. Opdatér en film"); 
             Console.WriteLine("0. Afslut");
             Console.Write("\nVælg en handling: ");
 
@@ -95,7 +94,7 @@ class Program
                     AddMovieToDb(tType, pTitle, oTitle, isAdult, sYear, eYear, runtime, genres);
                     break;
 
-                case "5": // NY CASE TIL UPDATE MOVIE
+                case "5":
                     Console.WriteLine("\n--- Opdatér eksisterende film ---");
 
                     Console.Write("Indtast ID på den film der skal opdateres (KUN TALLET, f.eks. 1 for tt0000001): ");
@@ -150,9 +149,6 @@ class Program
         }
     }
 
-    // --- METODER ---
-
-    // 1. SØG EFTER FILM
     static void SearchMovie(string fragment)
     {
         using (SqlConnection conn = new SqlConnection(connString))
@@ -208,14 +204,13 @@ class Program
         }
     }
 
-    // 2. SØG EFTER PERSON (Den nye metode!)
     static void SearchPerson(string fragment)
     {
         using (SqlConnection conn = new SqlConnection(connString))
         {
             SqlCommand cmd = new SqlCommand("SearchName", conn);
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandTimeout = 120; // God idé at have timeout her også, da Names tabellen er kæmpestor!
+            cmd.CommandTimeout = 120;
             cmd.Parameters.AddWithValue("@NameFragment", fragment);
 
             try
@@ -234,25 +229,21 @@ class Program
 
                     while (reader.Read())
                     {
-                        // Henter kolonnerne ud fra dit SQL Script
                         string nconst = reader["NConst"].ToString();
                         string name = reader["PrimaryName"].ToString();
                         string birthYear = reader["BirthYear"].ToString();
                         string deathYear = reader["DeathYear"].ToString();
 
-                        // ISNULL-tjek i C# via ??, da LEFT JOIN kan returnere null hvis de ingen professioner/film har
                         string profession = reader["PrimaryProfession"]?.ToString();
                         if (string.IsNullOrEmpty(profession)) profession = "Ukendt profession";
 
                         string title = reader["PrimaryTitle"]?.ToString();
                         if (string.IsNullOrEmpty(title)) title = "Ingen kendte titler";
 
-                        // Formatering (IMDb bruger "nm" for navne)
                         Console.WriteLine("--------------------------------------------------");
                         Console.WriteLine($"> ID:           nm{nconst.PadLeft(7, '0')}");
                         Console.WriteLine($"> NAVN:         {name}");
 
-                        // Udskriver kun levetid hvis vi har et fødselsår
                         if (!string.IsNullOrEmpty(birthYear))
                         {
                             string levetid = string.IsNullOrEmpty(deathYear) ? $"{birthYear} - Nu" : $"{birthYear} - {deathYear}";
@@ -271,7 +262,6 @@ class Program
         }
     }
 
-    // 3. TILFØJ PERSON
     static void AddPersonToDb(string name, int? birth, int? death, string professions, string titles)
     {
         using (SqlConnection conn = new SqlConnection(connString))
@@ -307,13 +297,11 @@ class Program
             SqlCommand cmd = new SqlCommand("AddMovie", conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            // Sender de 8 værdier præcis som din AddMovie procedure forventer dem
             cmd.Parameters.AddWithValue("@TitleType", titleType);
             cmd.Parameters.AddWithValue("@PrimaryTitle", primaryTitle);
             cmd.Parameters.AddWithValue("@OriginalTitle", originalTitle);
             cmd.Parameters.AddWithValue("@IsAdult", isAdult);
 
-            // Håndterer null-værdier sikkert
             cmd.Parameters.AddWithValue("@StartYear", (object)startYear ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@EndYear", (object)endYear ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@RuntimeMinutes", (object)runtime ?? DBNull.Value);
@@ -341,7 +329,6 @@ class Program
             SqlCommand cmd = new SqlCommand("UpdateMovie", conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            // Kaster parametrene afsted. Læg mærke til at genre ikke er plural ("Genres") i denne SP.
             cmd.Parameters.AddWithValue("@TConst", tconst);
             cmd.Parameters.AddWithValue("@TitleType", titleType);
             cmd.Parameters.AddWithValue("@PrimaryTitle", primaryTitle);
@@ -356,7 +343,6 @@ class Program
                 conn.Open();
                 int rowsAffected = cmd.ExecuteNonQuery();
 
-                // Selvom rækkerne opdateres, vil rowsAffected tælle de rækker der er påvirket i alle tabeller
                 if (rowsAffected > 0)
                     Console.WriteLine($"\nSucces! Filmen med ID tt{tconst.ToString().PadLeft(7, '0')} er nu opdateret.");
                 else

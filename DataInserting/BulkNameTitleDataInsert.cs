@@ -19,12 +19,10 @@ namespace IMDBopgave.DataInserting
 
             BulkInserterNameTitle nameTitleInserter = new BulkInserterNameTitle();
 
-            // 1. Læs den RIGTIGE fil med navne
             var allLines = File.ReadLines("");
 
             Console.WriteLine("Henter alle gyldige TConst (Film-ID'er) fra databasen...");
 
-            // 2. Vi bruger et HashSet til lynhurtigt at tjekke, om en film findes i databasen
             HashSet<int> validTitles = new HashSet<int>();
 
             using (SqlCommand cmd = new SqlCommand("SELECT TConst FROM Titles", sqlConn))
@@ -37,7 +35,6 @@ namespace IMDBopgave.DataInserting
             }
             Console.WriteLine($"Fandt {validTitles.Count} gyldige film i databasen.");
 
-            // 3. Klargør en tabel til at holde relationerne (FK_NConst og FK_TConst)
             DataTable namesTitlesTable = new DataTable();
             namesTitlesTable.Columns.Add("FK_NConst", typeof(int));
             namesTitlesTable.Columns.Add("FK_TConst", typeof(int));
@@ -50,10 +47,8 @@ namespace IMDBopgave.DataInserting
             {
                 string[] parts = line.Split('\t');
 
-                // name.basics har 6 kolonner. Kolonne index 5 er "knownForTitles"
                 if (parts.Length == 6)
                 {
-                    // Hent NConst og fjern "nm"
                     string rawNConst = parts[0].Substring(2);
 
                     if (int.TryParse(rawNConst, out int nconstInt))
@@ -62,17 +57,14 @@ namespace IMDBopgave.DataInserting
 
                         if (knownForString != "\\N")
                         {
-                            // Split på komma, da en person kan have flere kendte titler
                             string[] individualTitles = knownForString.Split(',');
 
                             foreach (string t in individualTitles)
                             {
-                                // Hent TConst og fjern "tt"
                                 string cleanTitle = t.Trim().Substring(2);
 
                                 if (int.TryParse(cleanTitle, out int tconstInt))
                                 {
-                                    // TJEK: Findes denne film overhovedet i vores SQL database?
                                     if (validTitles.Contains(tconstInt))
                                     {
                                         namesTitlesTable.Rows.Add(nconstInt, tconstInt);
@@ -84,7 +76,6 @@ namespace IMDBopgave.DataInserting
                     }
                 }
 
-                // Batching: Skyd afsted pr. 500.000 rækker
                 if (namesTitlesTable.Rows.Count >= 500000)
                 {
                     Console.WriteLine($"Indsætter batch... (Har fundet {relationCount} relationer indtil videre)");
@@ -93,7 +84,6 @@ namespace IMDBopgave.DataInserting
                 }
             }
 
-            // Indsæt resterne
             if (namesTitlesTable.Rows.Count > 0)
             {
                 Console.WriteLine("Indsætter sidste batch...");

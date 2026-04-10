@@ -20,9 +20,6 @@ namespace IMDBopgave.Inserters
             {
                 bulkCopy.DestinationTableName = "Genres";
 
-                // VIGTIGT: Her fortæller vi præcis, at "Genre"-kolonnen i vores DataTable 
-                // skal overføres til "Genre"-kolonnen i databasen. 
-                // Så ignorerer den automatisk GenreID, som SQL selv styrer.
                 bulkCopy.ColumnMappings.Add("Genre", "Genre");
 
                 bulkCopy.WriteToServer(genreTable);

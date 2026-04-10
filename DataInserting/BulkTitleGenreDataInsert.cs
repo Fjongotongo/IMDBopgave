@@ -26,7 +26,6 @@ namespace IMDBopgave.DataInserting
 
             Console.WriteLine("Henter Genre-ID'er fra databasen...");
 
-            // 1. Opret en Dictionary (vores lynhurtige opslagsbog: "GenreNavn" -> GenreID)
             Dictionary<string, int> genreMap = new Dictionary<string, int>();
 
             using (SqlCommand cmd = new SqlCommand("SELECT GenreID, Genre FROM Genres", sqlConn))
@@ -41,14 +40,12 @@ namespace IMDBopgave.DataInserting
             }
             Console.WriteLine($"Fandt {genreMap.Count} genrer i databasen.");
 
-            // 2. Klargør en tabel til at holde relationerne (FK_TConst og FK_GenreID)
             DataTable titlesGenresTable = new DataTable();
             titlesGenresTable.Columns.Add("FK_TConst", typeof(int));
             titlesGenresTable.Columns.Add("FK_GenreID", typeof(int));
 
             Console.WriteLine("Læser film og bygger relationer...");
 
-            // Vi bruger en tæller til at holde styr på, hvor mange vi har
             int relationCount = 0;
 
             foreach (string movie in allLines.Skip(1))
@@ -57,7 +54,6 @@ namespace IMDBopgave.DataInserting
 
                 if (parts.Length == 9)
                 {
-                    // IMDb ID'er starter med "tt". Vi fjerner "tt" for at få en ren INT til din database
                     string rawTConst = parts[0].Substring(2);
 
                     if (int.TryParse(rawTConst, out int tconstInt))
@@ -72,7 +68,6 @@ namespace IMDBopgave.DataInserting
                             {
                                 string cleanGenre = g.Trim();
 
-                                // Slå genren op i vores Dictionary for at få det rigtige ID
                                 if (genreMap.ContainsKey(cleanGenre))
                                 {
                                     int genreId = genreMap[cleanGenre];
@@ -84,17 +79,14 @@ namespace IMDBopgave.DataInserting
                     }
                 }
 
-                // VIGTIGT: Fordi der er over 12 mio film (og måske 25 mio relationer), 
-                // sender vi dem til SQL i "bidder" af 500.000 for ikke at crashe din RAM.
                 if (titlesGenresTable.Rows.Count >= 500000)
                 {
                     Console.WriteLine($"Indsætter batch... (Har fundet {relationCount} relationer indtil videre)");
                     titleGenreInserter.InsertTitlesGenresBatch(titlesGenresTable, sqlConn);
-                    titlesGenresTable.Clear(); // Tøm tabellen så vi er klar til de næste 500.000
+                    titlesGenresTable.Clear();
                 }
             }
 
-            // Indsæt de allersidste der er tilbage i tabellen (hvis der er nogen)
             if (titlesGenresTable.Rows.Count > 0)
             {
                 Console.WriteLine("Indsætter sidste batch...");

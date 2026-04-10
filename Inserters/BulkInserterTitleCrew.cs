@@ -14,10 +14,8 @@ namespace IMDBopgave.Inserters
         {
             using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn))
             {
-                // Vigtigt! Peger nu på Names_Titles tabellen
                 bulkCopy.DestinationTableName = "Titles_Crew";
 
-                // Vigtigt! Mapper nu NConst og TConst
                 bulkCopy.ColumnMappings.Add("FK_TConst", "FK_TConst");
                 bulkCopy.ColumnMappings.Add("FK_NConst", "FK_NConst");
                 bulkCopy.ColumnMappings.Add("FK_RoleID", "FK_RoleID");

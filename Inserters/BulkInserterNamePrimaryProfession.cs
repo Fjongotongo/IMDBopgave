@@ -16,7 +16,6 @@ namespace IMDBopgave.Inserters
             {
                 bulkCopy.DestinationTableName = "Names_PrimaryProfessions";
 
-                // Map C# kolonner til SQL kolonner
                 bulkCopy.ColumnMappings.Add("FK_NConst", "FK_NConst");
                 bulkCopy.ColumnMappings.Add("FK_PPID", "FK_PPID");
 
