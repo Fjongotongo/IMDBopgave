@@ -184,7 +184,7 @@ CREATE OR ALTER PROCEDURE UpdateMovie
     @StartYear SMALLINT, 
     @EndYear SMALLINT,
     @RuntimeMinutes INT,
-    @Genres VARCHAR(500)
+    @Genres VARCHAR(75)
 AS
 BEGIN
     UPDATE Titles
