@@ -1,7 +1,5 @@
 USE MovieDB
 
--- title.basics.tsv:
-
 CREATE TABLE Titles(
     TConst INT PRIMARY KEY NOT NULL,
     TitleType VARCHAR(12) NOT NULL,
@@ -73,26 +71,6 @@ CREATE TABLE Titles_Crew(
 INSERT INTO CrewRoles (RoleName) VALUES ('Director')
 INSERT INTO CrewRoles (RoleName) VALUES ('Writer')
 
-SELECT * from Genres
-
-SELECT * from Titles
-
-SELECT * from Titles_Genres
-
-SELECT * from Names
-
-SELECT * FROM PrimaryProfessions
-
-SELECT * FROM Names_Titles
-
-SELECT * FROM Names_PrimaryProfessions
-
-SELECT * FROM Titles_Crew
-
-
-------------------------------
---As a user I want to search for a movie title using wildcard searching, and see the result in alphabetic order
-
 CREATE OR ALTER PROCEDURE SearchMovieTitle 
     @TitleFragment VARCHAR(500)
 AS
@@ -111,13 +89,6 @@ BEGIN
     ORDER BY 
         Titles.PrimaryTitle ASC;
 END
-
-EXEC SearchMovieTitle @TitleFragment= '' 
-
-
----------------------
-
---As a user I want to search for a person using wildcard searching, and see the result in alphabetic order
 
 CREATE OR ALTER PROCEDURE SearchName 
     @NameFragment VARCHAR(125)
@@ -145,12 +116,6 @@ BEGIN
         Names.PrimaryName ASC;
 END
 
-EXEC SearchName @NameFragment= 'Børge Jørgensen' 
-
-----------------------------
-
---As an user I want to add a movie to the database (only basic (title table) information)
-
 CREATE OR ALTER PROCEDURE AddMovie 
     @TitleType VARCHAR(12), 
     @PrimaryTitle VARCHAR(500),
@@ -168,7 +133,7 @@ BEGIN
     INSERT INTO Titles (TConst, TitleType, PrimaryTitle, OriginalTitle, IsAdult, StartYear, EndYear, RuntimeMinutes) 
     VALUES (@NewTConst, @TitleType, @PrimaryTitle, @OriginalTitle, @IsAdult, @StartYear, @EndYear, @RuntimeMinutes);
 
-    -- Håndtér komma-separerede genrer
+    -- HÃ¥ndtÃ©r komma-separerede genrer
     IF @Genres IS NOT NULL
     BEGIN
         INSERT INTO Titles_Genres (FK_TConst, FK_GenreID)
@@ -177,20 +142,6 @@ BEGIN
         JOIN Genres g ON g.Genre = TRIM(s.value);
     END
 END
-
-EXEC AddMovie 
-    @TitleType = 'movie', 
-    @PrimaryTitle = 'Min SSeje Actionfilm', 
-    @OriginalTitle = 'Min SSeje Actionfilm', 
-    @IsAdult = 0, 
-    @StartYear = 2025, 
-    @EndYear = NULL, 
-    @RuntimeMinutes = 130,
-    @Genres = 'Action'
-
-----------------------------------
-
---As an user I want to add a person to the database (only basic (name basic) information)
 
 CREATE OR ALTER PROCEDURE AddPerson 
     @PrimaryName VARCHAR(110),
@@ -223,18 +174,6 @@ BEGIN
         JOIN Titles t ON t.TConst = TRY_CAST(TRIM(s.value) AS INT);
     END
 END
-
-
-EXEC AddPerson 
-    @PrimaryName = 'Lauren Bacall', 
-    @BirthYear = 1924, 
-    @DeathYear = 2014, 
-    @Professions = 'actress,soundtrack', 
-    @KnownForTitles = '37382,75213';
-
--------------------------------
-
--- As an user I want to update movie information (only basic information + genre)
 
 CREATE OR ALTER PROCEDURE UpdateMovie 
     @TConst INT,
@@ -270,16 +209,4 @@ BEGIN
         JOIN Genres g ON g.Genre = TRIM(s.value);
     END
 END
-
-
-EXEC UpdateMovie 
-    @TConst = 1, 
-    @TitleType = 'movie', 
-    @PrimaryTitle = 'Min Opdaterede Actionfilm',
-    @OriginalTitle = 'Min Opdaterede Actionfilm', 
-    @IsAdult = 0,
-    @StartYear = 2026,
-    @EndYear = NULL,
-    @RuntimeMinutes = 140,
-    @Genres = 'Comedy, action';
 
